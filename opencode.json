@@ -1,5 +1,14 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "instructions": ["AGENTS.md"],
-  "small_model": "anthropic/claude-3-5-sonnet-latest"
+  "small_model": "opencode/claude-sonnet-4-6",
+  "default_agent": "token-lean",
+  "tool_output": {
+    "max_lines": 500,
+    "max_bytes": 16384
+  },
+  "compaction": {
+    "auto": true,
+    "preserve_recent_tokens": 8000
+  }
 }
