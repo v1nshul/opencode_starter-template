@@ -6,6 +6,10 @@ __pycache__/
 *.pyc
 .env
 
+# Benchmark output
+bench/report/
+bench/scratch/
+
 # OpenCode template files — keep tracked (do not ignore)
 !AGENTS.md
 !.opencode/
