@@ -1,0 +1,11 @@
+# Heavy / generated
+node_modules/
+venv/
+.venv/
+__pycache__/
+*.pyc
+.env
+
+# OpenCode template files — keep tracked (do not ignore)
+!AGENTS.md
+!.opencode/
