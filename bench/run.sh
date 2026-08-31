@@ -82,7 +82,7 @@ for agent in "${AGENTS[@]}"; do
   done
 done
 
-# Aggregate assistant token usage from message.updated events and emit report.
+# Aggregate assistant token usage from step_finish events and emit report.
 python3 - "$OUT" "$TASK" "$MODEL" "$RUNS" "${AGENTS[@]}" <<'PY'
 import json, sys
 from pathlib import Path
@@ -100,19 +100,19 @@ for agent in agents:
                 e = json.loads(line)
             except ValueError:
                 continue
-            if e.get("type") != "message.updated":
+            if e.get("type") not in ("step_finish", "step-finish"):
                 continue
-            info = (e.get("properties") or {}).get("info") or {}
-            if info.get("role") != "assistant":
+            part = e.get("part") or {}
+            if part.get("type") not in ("step-finish", "step_finish"):
                 continue
-            t = info.get("tokens") or {}
+            t = part.get("tokens") or {}
             tot["input"] += t.get("input", 0)
             tot["output"] += t.get("output", 0)
             tot["reasoning"] += t.get("reasoning", 0)
             c = t.get("cache") or {}
             tot["cache_read"] += c.get("read", 0)
             tot["cache_write"] += c.get("write", 0)
-            tot["cost"] += info.get("cost", 0.0) or 0.0
+            tot["cost"] += part.get("cost", 0.0) or 0.0
     tot["cost"] = round(tot["cost"], 4)
     tot["total"] = tot["input"] + tot["output"] + tot["reasoning"]
     report["agents"][agent] = tot
