@@ -16,16 +16,35 @@ The `token-lean` agent and `AGENTS.md` rules only help if they change behavior.
 Measure them instead of guessing:
 
 ```sh
-./bench/run.sh --model opensrc/Kimi-K3     # 3 runs each: build vs token-lean
-python3 bench/summary.py                   # comparison table + % delta
+./bench/run.sh --model opencode/<model-id>   # 3 runs each: build vs token-lean
+python3 bench/summary.py                     # comparison table + % delta
 ```
 
 Requires a connected provider (`opencode auth login`) and Python >= 3.11.
 `--model` is required (no default) so a run never silently burns an unintended
-model; `BENCH_MODEL` is an equivalent alternative. Results land in
+model; `BENCH_MODEL` is an equivalent alternative. Use a Zen model id
+(`opencode/big-pickle`, `opencode/mimo-v2.5-free`, ...) — check `opencode models`
+or `/models` in the TUI for what your provider serves. Results land in
 `bench/report/report.json`; per-run event streams are in
 `bench/report/events/`. Set run count with `--runs N`; see `--help`.
 
 Bundled fixtures: `math-lib` (greenfield) and `bug-hunt` (fix-bugs loop). Add
 your own by dropping a `<name>.toml` in `bench/tasks/` with a `prompt` field,
 then run `./bench/run.sh --model <id> --task <name>`.
+
+### Sample results
+
+Benchmarked with the free Zen model `opencode/big-pickle`, task `math-lib`,
+one run per agent:
+
+| metric | build | token-lean |
+| --- | --- | --- |
+| input | 3,308 | 2,507 |
+| output | 952 | 1,118 |
+| cache_read | 50,432 | 39,488 |
+| **total** | **4,260** | **3,625** |
+
+**Delta: token-lean saves 14.9%** over the default `build` agent on this
+workload. Treat these numbers as illustrative of the harness, not a guarantee —
+ratios vary by model, task, and run count. Rerun `./bench/run.sh` for
+deterministic, model-specific results.
