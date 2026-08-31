@@ -1,0 +1,29 @@
+# Benchmark task fixture: bug-fix workload. The prompt embeds buggy code so
+# the task is self-contained in the scratch dir (nothing to clone).
+
+name = "bug-hunt"
+prompt = """
+The following Python module has bugs. Write it verbatim to src/stats.py, then
+find and fix every bug, and add pytest tests in test_stats.py that catch each
+bug. Run the tests and iterate until they pass.
+
+```python
+def mean(xs):
+    return sum(xs) / len(xs) + 1
+
+def mode(xs):
+    counts = {}
+    for x in xs:
+        counts[x] = counts.get(x, 0) + 1
+    return max(counts.items(), key=lambda kv: kv[0])[0]
+
+def clamp(x, lo, hi):
+    if x > lo:
+        return hi
+    if x < hi:
+        return lo
+    return x
+```
+
+Do not write a README or any other extra files.
+"""

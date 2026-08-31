@@ -30,7 +30,7 @@ def main(path: str) -> None:
     print()
     base = agents[a]["total"] or 1
     delta = (agents[b]["total"] - agents[a]["total"]) / base * 100
-    print(f"{a} total: {agents[a]['total']:,}")
+    print(f"{a} total: {agents[a]['total']:,}  (baseline)")
     print(f"{b} total: {agents[b]['total']:,}")
     print(f"delta ({b} vs {a}): {delta:+.1f}%  "
           + ("SAVES tokens" if delta < 0 else "USES more (or no savings)"))
