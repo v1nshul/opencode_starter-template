@@ -6,7 +6,7 @@ class TestReverseWords:
         assert reverse_words("hello world") == "world hello"
 
     def test_multiple_spaces(self):
-        assert reverse_words("a  b   c") == "c b a"
+        assert reverse_words("a  b   c") == "c   b  a"
 
     def test_single_word(self):
         assert reverse_words("hello") == "hello"
@@ -22,6 +22,12 @@ class TestReverseWords:
 
     def test_whitespace_only(self):
         assert reverse_words("   ") == ""
+
+    def test_tabs_and_newlines(self):
+        assert reverse_words("hello\tworld\nfoo") == "foo\nworld\thello"
+
+    def test_mixed_whitespace(self):
+        assert reverse_words("a  b c   d") == "d   c b  a"
 
 
 class TestIsPalindrome:
