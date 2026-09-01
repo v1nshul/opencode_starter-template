@@ -28,11 +28,42 @@ or `/models` in the TUI for what your provider serves. Results land in
 `bench/report/report.json`; per-run event streams are in
 `bench/report/events/`. Set run count with `--runs N`; see `--help`.
 
-Bundled fixtures: `math-lib` (greenfield) and `bug-hunt` (fix-bugs loop). Add
-your own by dropping a `<name>.toml` in `bench/tasks/` with a `prompt` field,
-then run `./bench/run.sh --model <id> --task <name>`.
+Bundled fixtures: `math-lib` (greenfield), `bug-hunt` (fix-bugs loop), and
+`orchestrated` (full delegation pipeline). Add your own by dropping a
+`<name>.toml` in `bench/tasks/` with a `prompt` field, then run
+`./bench/run.sh --model <id> --task <name>`.
 
-### Sample results
+## Multi-agent orchestration
+
+Beyond the single `token-lean` agent, this template ships a small orchestrator
+pattern for multi-step work. Delegation is explicit: the orchestrator only
+invokes a specialist when you ask it to.
+
+| agent | mode | tools | role |
+| --- | --- | --- | --- |
+| `orchestrator` | primary | read/grep/glob/list/bash, no edits | decomposes work, delegates on request |
+| `explore` | subagent | read-only | discovery: find files/symbols, map structure |
+| `planner` | subagent | read-only | produce an implementation plan |
+| `coder` | subagent | read/edit only, no search/test | implement from exact instructions |
+| `reviewer` | subagent | read + bash, no edits | verify changes, run tests |
+
+Protocol: `explore -> planner -> coder -> reviewer`. Specialists never delegate
+(`task_budget` 0); only the orchestrator can (`task_budget` 10, depth limit 3).
+
+Use it in the TUI:
+
+```
+Switch to the orchestrator (Tab), then:
+  use explore to map the workspace
+  have the planner outline the implementation
+  delegate the implementation to coder
+  have reviewer run the tests
+```
+
+Or `@mention` a specialist directly for one-off work (`@explore find the auth
+flow`).
+
+## Sample results
 
 Benchmarked with the free Zen model `opencode/big-pickle`, task `math-lib`,
 one run per agent:

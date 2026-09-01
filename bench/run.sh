@@ -28,7 +28,7 @@ MODEL="${BENCH_MODEL:-}"
 RUNS=3
 TASK="math-lib"
 OUT="$ROOT/report"
-AGENTS=(build token-lean)
+AGENTS=(build token-lean orchestrator)
 
 while [[ $# -gt 0 ]]; do
   case "$1" in

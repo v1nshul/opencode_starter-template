@@ -1,0 +1,19 @@
+# Benchmark task fixture for the orchestrator pattern.
+# The prompt explicitly requests delegation so the orchestrator exercises the
+# full pipeline: explore -> planner -> coder -> reviewer.
+
+name = "orchestrated"
+prompt = """
+Create a small Python module src/stringutil.py implementing:
+- reverse_words(s) reversing the order of words in a string
+- is_palindrome(s) case-insensitive palindrome check handling punctuation
+- count_vowels(s) vowel counting
+
+Coordinate this task with your specialists in this exact order:
+1. explore: map the current workspace so we know what exists
+2. planner: produce a concise implementation plan
+3. coder: implement src/stringutil.py per the plan
+4. reviewer: write and run tests (test_stringutil.py) with pytest and report PASS/FAIL
+
+Report the final status and any findings. Do not write a README or extra files.
+"""

@@ -18,3 +18,9 @@ Strict, mandatory. Follow at all times.
 ## Execution
 - Fail fast. After 2 bash failures, stop and ask the human.
 - Combine commands with `&&`.
+
+## Orchestration
+- Only the `orchestrator` agent delegates (via the task tool), and only when explicitly requested.
+- Specialists do not delegate: `explore` (read-only discovery), `planner` (read-only plans), `coder` (writes/edits, no search/test), `reviewer` (verification + tests, no edits).
+- Pipeline order when coordinating: explore -> planner -> coder -> reviewer.
+- Delegation prompts must carry exact file paths and expected output; expect compact summaries back.

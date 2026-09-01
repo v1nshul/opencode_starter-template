@@ -9,5 +9,13 @@
   "compaction": {
     "auto": true,
     "preserve_recent_tokens": 8000
+  },
+  "experimental": {
+    "level_limit": 3
+  },
+  "agent": {
+    "orchestrator": {
+      "task_budget": 10
+    }
   }
 }
