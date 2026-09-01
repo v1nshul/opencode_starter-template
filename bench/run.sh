@@ -62,9 +62,31 @@ with open(sys.argv[1], "rb") as f:
 PY
 )"
 
+# Expected outputs from the fixture ("expect" list). A run is only completed
+# (OK) if every file exists in its scratch dir after the run.
+EXPECT_FILES=()
+while IFS= read -r line; do
+  [[ -n "$line" ]] && EXPECT_FILES+=("$line")
+done < <(python3 - "$FIXTURE" <<'PY'
+import tomllib, sys
+with open(sys.argv[1], "rb") as f:
+    for p in tomllib.load(f).get("expect", []):
+        print(p)
+PY
+)
+
+# Hygiene gate: the project root must be free of leaked benchmark artifacts,
+# otherwise runs silently reuse each other's output (non-hermetic).
+PROJ="$(dirname "$ROOT")"
+leaks="$(ls "$PROJ"/src "$PROJ"/test_*.py "$PROJ"/pyproject.toml 2>/dev/null || true)"
+[[ -z "$leaks" ]] || { echo "aborting: polluted project root: $leaks" >&2; \
+  echo "  remove these bench artifacts from $PROJ before benchmarking" >&2; exit 2; }
+
 mkdir -p "$OUT/events"
 rm -f "$OUT/events"/*.jsonl 2>/dev/null || true
 : > "$OUT/audit.log"
+
+declare -A completions
 
 for agent in "${AGENTS[@]}"; do
   for i in $(seq 1 "$RUNS"); do
@@ -74,12 +96,32 @@ for agent in "${AGENTS[@]}"; do
 
     echo "[$(date +%H:%M:%S)] $agent run $i/$RUNS (model=$MODEL)" | tee -a "$OUT/audit.log"
 
-    # Run in an isolated scratch dir so caches/work are comparable.
+    # Run in an isolated scratch dir. --dir pins the session workspace to the
+    # scratch dir: without it opencode resolves the workspace to the config dir
+    # (the project root) and runs pollute each other.
     ( cd "$scratch" && \
-      "$BIN" run --format json --model "$MODEL" --agent "$agent" "$PROMPT" \
+      "$BIN" run --format json --model "$MODEL" --agent "$agent" --dir "$scratch" "$PROMPT" \
         > "$events" 2>>"$OUT/audit.log" ) \
       || echo "  run failed (see $OUT/audit.log)" | tee -a "$OUT/audit.log"
+
+    # Completion gate: every expected output must exist in the scratch dir.
+    if [[ ${#EXPECT_FILES[@]} -gt 0 ]]; then
+      missing=()
+      for f in "${EXPECT_FILES[@]}"; do
+        [[ -f "$scratch/$f" ]] || missing+=("$f")
+      done
+      if [[ ${#missing[@]} -eq 0 ]]; then
+        echo "  completion: OK" | tee -a "$OUT/audit.log"
+        completions["$agent"]=$(( ${completions["$agent"]:-0} + 1 ))
+      else
+        echo "  completion: FAIL missing ${missing[*]}" | tee -a "$OUT/audit.log"
+      fi
+    fi
   done
+done
+
+for agent in "${AGENTS[@]}"; do
+  echo "$agent: ${completions["$agent"]:-0}/$RUNS tasks completed" | tee -a "$OUT/audit.log"
 done
 
 # Aggregate assistant token usage from step_finish events and emit report.

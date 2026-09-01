@@ -3,6 +3,7 @@
 # coding task: read, write, edit, test.
 
 name = "math-lib"
+expect = ["src/mathlib.py", "test_mathlib.py"]
 prompt = """
 Create a small Python module src/mathlib.py implementing:
 - gcd(a, b) using Euclid's algorithm

@@ -3,6 +3,7 @@
 # full pipeline: explore -> planner -> coder -> reviewer.
 
 name = "orchestrated"
+expect = ["src/stringutil.py", "test_stringutil.py"]
 prompt = """
 Create a small Python module src/stringutil.py implementing:
 - reverse_words(s) reversing the order of words in a string
