@@ -79,3 +79,35 @@ one run per agent:
 workload. Treat these numbers as illustrative of the harness, not a guarantee —
 ratios vary by model, task, and run count. Rerun `./bench/run.sh` for
 deterministic, model-specific results.
+
+### Measured results (3 runs/agent, `opencode/big-pickle`)
+
+`math-lib` — single-agent workload, no delegation requested:
+
+| metric | build | token-lean | orchestrator |
+| --- | --- | --- | --- |
+| input | 7,734 | 9,397 | 11,296 |
+| output | 1,580 | 2,217 | 2,248 |
+| cache_read | 142,656 | 147,072 | 119,616 |
+| **total** | **9,314** | **11,614** (+24.7%) | **13,544** (+45.4%) |
+
+`orchestrated` — multi-step workload, delegation explicitly requested:
+
+| metric | build | token-lean | orchestrator |
+| --- | --- | --- | --- |
+| input | 23,897 | 25,238 | 26,092 |
+| output | 3,539 | 4,486 | 2,518 |
+| cache_read | 127,936 | 157,120 | **60,736** (−53%) |
+| **total** | **27,436** | **29,724** (+8.3%) | **28,610** (+4.3%) |
+
+Verdict:
+
+- **Delegate deliberately, and only for multi-step work.** On `orchestrated`
+  the orchestrator is near-parity with `build` (+4.3%) and cuts cache_read in
+  half — specialists run in small, isolated contexts instead of one growing
+  one — while producing the least output. On `math-lib` (no decomposition
+  value) it costs the most (+45%): pure coordination overhead.
+- `build` auto-delegates too (to `general`), so it is an ad-hoc delegator, not
+  a pure single-agent baseline; the orchestrator's small premium buys structure.
+- These 3-run numbers are the trustworthy ones; the 1-run sample above is
+  illustrative only. Rerun `./bench/run.sh --model <id>` for your own model.
